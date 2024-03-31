@@ -1,39 +1,87 @@
-import { useEffect, useState } from "react";
-import { ColorfulMessage } from "./components/ColorfulMessage";
+import { useState } from "react";
+import "./App.css";
+import { InputTodo } from "./components/inputTodo";
 
 export const App = () => {
-    const [num, setNum] = useState(0);
-    const [isShow, setIsShow] = useState(false);
-    const onClickCountUp = () => {
-        setNum(num + 1);
-    };
-    const onClickToggle = () => {
-        setIsShow(!isShow);
+    const [todoText, setTodoText] = useState("");
+    const [incompleteTodos, setIncompleteTodos] = useState([]);
+    const [completeTodos, setCompleteTodos] = useState([]);
+
+    const onChangeTodoText = (event) => setTodoText(event.target.value);
+
+    const onClickAdd = () => {
+        if (todoText === "") return;
+        const newTodos = [...incompleteTodos, todoText];
+        setIncompleteTodos(newTodos);
+        setTodoText("");
     };
 
-    useEffect(() => {
-        if (num > 0) {
-            if (num % 3 === 0) {
-                // ﾊﾞｰﾃｨｶﾙﾗｲﾝ左辺がtrueの時はそこで処理終了falseなら右辺
-                isShow || setIsShow(true);
-            }   else {
-                // ｱﾝﾊﾟｻﾝﾄﾞfalseの時はfalseを、両辺ともtrueの時は右辺を
-                isShow && setIsShow(false);
-            }
-        }
-    }, [num]);
+    const onClickDelete = (index) => {
+        const newTodos = [...incompleteTodos];
+        newTodos.splice(index, 1);
+        setIncompleteTodos(newTodos);
+    };
 
-    
-    
-    return (       
-        <div>
-            <h1 style={{ color: "red" }}>こんにちは！</h1>
-            <ColorfulMessage color="blue">お元気ですか？</ColorfulMessage>
-            <ColorfulMessage color="red">元気です！</ColorfulMessage>
-            <button onClick={onClickCountUp}>カウントアップ</button>
-            <p>{num}</p>
-            <button onClick={onClickToggle}>on/off</button>
-            {isShow && <p>iiiiiiiiiiii</p>}           
-        </div> 
+    const onClickComplete = (index) => {
+        const newIncompleteTodos = [...incompleteTodos];
+        newIncompleteTodos.splice(index, 1);
+
+        const newCompleteTodos = [...completeTodos, incompleteTodos[index]];
+        setIncompleteTodos(newIncompleteTodos);
+        setCompleteTodos(newCompleteTodos);
+    };
+
+    const onClickBack = (index) => {
+        const newCompleteTodos = [...completeTodos];
+        newCompleteTodos.splice(index, 1);
+
+        const newIncompleteTodos = [...incompleteTodos, completeTodos[index]];
+        setCompleteTodos(newCompleteTodos);
+        setIncompleteTodos(newIncompleteTodos);
+    };
+
+
+
+
+
+    return (
+        <>
+            <InputTodo 
+                todoText={todoText} 
+                onChange={onChangeTodoText} 
+                onClick={onClickAdd}
+            />
+            <div className="incomplete-area">
+                <p className="title">未完了のTODO</p>
+                <ul>
+                    {incompleteTodos.map((todo, index) => {
+                        return (
+                            <li key={todo}>
+                                <div className="list-row">
+                                    <p className="todo-item">{todo}</p>
+                                    <button onClick={() => onClickComplete(index)}>完了</button>
+                                    <button onClick={() => onClickDelete(index)}>削除</button>
+                                </div>
+                            </li>
+                        );
+                    })}
+                </ul>
+            </div>
+            <div className="complete-area">
+                <p className="title">完了のTODO</p>
+                <ul>
+                    {completeTodos.map((todo, index) => {
+                        return (
+                            <li key={todo}>
+                                <div className="list-row">
+                                    <p className="todo-item">{todo}</p>
+                                    <button onClick={() => onClickBack(index)}>戻す</button>
+                                </div>
+                            </li>
+                        )
+                    })}
+                </ul>
+            </div>
+        </>
     );
 };
